@@ -1,0 +1,21 @@
+server:
+  port: 8080
+  host: "0.0.0.0"
+
+nats:
+  operator_nkey: "SOAGMHTEKHB5NM7HXQGS6FMU6OTIP6DRC7GJHX7MZXDZHKXQC6X7A2QOQI"
+
+database:
+  driver: "sqlite3"
+  dsn: "./control.db"
+
+log:
+  level: "info"
+  format: "text"
+
+monitor:
+  healthCheck:
+    enable: false
+    interval: 30
+  serverList:
+    timeout: 5

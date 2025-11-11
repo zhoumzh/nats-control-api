@@ -1,0 +1,24 @@
+# 编译产物
+leb-rbac-api
+main
+*.exe
+
+# 配置文件（包含敏感信息）
+config.json
+.env
+
+# 日志文件
+*.log
+
+# IDE文件
+.vscode/
+.idea/
+
+# 依赖
+vendor/
+
+# 测试
+coverage.out
+
+# MacOS
+.DS_Store

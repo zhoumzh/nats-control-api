@@ -1,0 +1,4875 @@
+basePath: /api/v1
+definitions:
+  models.APIStats:
+    properties:
+      errors:
+        type: integer
+      level:
+        type: integer
+      total:
+        type: integer
+    type: object
+  models.AccessControls:
+    properties:
+      source_ips:
+        description: IP restrictions (CIDR format), empty means no restriction
+        items:
+          type: string
+        type: array
+      time_restrictions:
+        allOf:
+        - $ref: '#/definitions/models.TimeRestrictions'
+        description: Time-based access (optional), empty means no restriction
+    type: object
+  models.Account:
+    properties:
+      created_at:
+        $ref: '#/definitions/models.CustomTime'
+      creds_file:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_system_account:
+        description: 新增字段
+        type: boolean
+      jwt_claims:
+        $ref: '#/definitions/models.JSONMap'
+      jwt_text:
+        description: 存储实际的JWT密文
+        type: string
+      limits:
+        $ref: '#/definitions/models.AccountLimits'
+      n_key:
+        type: string
+      name:
+        type: string
+      origin_cluster_id:
+        description: 创建来源集群ID
+        type: string
+      public_key:
+        type: string
+      status:
+        $ref: '#/definitions/models.AccountStatus'
+      updated_at:
+        $ref: '#/definitions/models.CustomTime'
+    required:
+    - name
+    type: object
+  models.AccountAssociationRequest:
+    properties:
+      description:
+        description: association description
+        type: string
+      subjects:
+        description: subjects to share
+        items:
+          $ref: '#/definitions/models.AccountAssociationSubject'
+        type: array
+      target_account_id:
+        description: target account to associate with
+        type: string
+    required:
+    - subjects
+    - target_account_id
+    type: object
+  models.AccountAssociationSubject:
+    properties:
+      base_subject:
+        description: base subject (e.g., "orders", "events")
+        type: string
+      description:
+        description: subject description
+        type: string
+      pattern:
+        description: 'pattern: ".*" or ".>"'
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/models.ImportType'
+        description: stream or service
+    required:
+    - base_subject
+    - pattern
+    - type
+    type: object
+  models.AccountDetail:
+    properties:
+      accounts:
+        type: integer
+      api:
+        $ref: '#/definitions/models.APIStats'
+      ha_assets:
+        type: integer
+      id:
+        type: string
+      memory_unit:
+        $ref: '#/definitions/models.StorageUnit'
+      memory_value:
+        type: number
+      name:
+        type: string
+      reserved_memory_unit:
+        $ref: '#/definitions/models.StorageUnit'
+      reserved_memory_value:
+        type: number
+      reserved_storage_unit:
+        $ref: '#/definitions/models.StorageUnit'
+      reserved_storage_value:
+        type: number
+      storage_unit:
+        $ref: '#/definitions/models.StorageUnit'
+      storage_value:
+        type: number
+    type: object
+  models.AccountExport:
+    properties:
+      account_token_position:
+        description: position of account in subject
+        type: integer
+      info:
+        allOf:
+        - $ref: '#/definitions/models.ExportInfo'
+        description: additional export info
+      name:
+        description: export name
+        type: string
+      response_type:
+        description: response type for services
+        type: string
+      revocations:
+        description: revoked public keys
+        items:
+          type: string
+        type: array
+      subject:
+        description: subject to export
+        type: string
+      token_req:
+        description: require activation token
+        type: boolean
+      type:
+        allOf:
+        - $ref: '#/definitions/models.ExportType'
+        description: stream or service
+    type: object
+  models.AccountImport:
+    properties:
+      account:
+        description: account ID to import from
+        type: string
+      name:
+        description: import name
+        type: string
+      subject:
+        description: subject to import
+        type: string
+      to:
+        description: local subject mapping
+        type: string
+      token:
+        description: activation token
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/models.ImportType'
+        description: stream or service
+    type: object
+  models.AccountLimits:
+    properties:
+      default_permissions:
+        allOf:
+        - $ref: '#/definitions/models.UserPermissions'
+        description: Default permissions for all users in this account
+      exports:
+        items:
+          $ref: '#/definitions/models.AccountExport'
+        type: array
+      imports:
+        description: Import/Export configuration
+        items:
+          $ref: '#/definitions/models.AccountImport'
+        type: array
+      jetstream_limits:
+        allOf:
+        - $ref: '#/definitions/models.JetStreamAccountLimits'
+        description: JetStream limits
+      max_connections:
+        type: integer
+      max_data_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 单位
+      max_data_value:
+        description: 数值
+        type: number
+      max_leaf_nodes:
+        type: integer
+      max_payload_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 单位
+      max_payload_value:
+        description: 数值
+        type: number
+      max_subscriptions:
+        type: integer
+    type: object
+  models.AccountListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.Account'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  models.AccountStatus:
+    enum:
+    - active
+    - disabled
+    type: string
+    x-enum-varnames:
+    - AccountStatusActive
+    - AccountStatusDisabled
+  models.AddExportRequest:
+    properties:
+      account_token_position:
+        description: position of account in subject
+        type: integer
+      description:
+        description: export description
+        type: string
+      info_url:
+        description: additional info URL
+        type: string
+      name:
+        description: export name
+        type: string
+      response_type:
+        description: response type for services
+        type: string
+      subject:
+        description: subject to export
+        type: string
+      token_req:
+        description: require activation token
+        type: boolean
+      type:
+        allOf:
+        - $ref: '#/definitions/models.ExportType'
+        description: stream or service
+    required:
+    - name
+    - subject
+    - type
+    type: object
+  models.AddImportRequest:
+    properties:
+      account:
+        description: account ID to import from
+        type: string
+      name:
+        description: import name
+        type: string
+      subject:
+        description: subject to import
+        type: string
+      to:
+        description: local subject mapping
+        type: string
+      token:
+        description: activation token
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/models.ImportType'
+        description: stream or service
+    required:
+    - account
+    - name
+    - subject
+    - type
+    type: object
+  models.Cluster:
+    properties:
+      cluster_port:
+        type: integer
+      created_at:
+        $ref: '#/definitions/models.CustomTime'
+      description:
+        type: string
+      gateway_port:
+        type: integer
+      host:
+        description: NATS连接配置 - 拆分为具体字段
+        type: string
+      id:
+        type: string
+      monitor_port:
+        type: integer
+      name:
+        type: string
+      nats_port:
+        type: integer
+      status:
+        $ref: '#/definitions/models.ClusterStatus'
+      system_account_id:
+        description: 系统账户配置
+        type: string
+      system_user_id:
+        type: string
+      updated_at:
+        $ref: '#/definitions/models.CustomTime'
+    required:
+    - host
+    - name
+    type: object
+  models.ClusterConnection:
+    properties:
+      connection_type:
+        description: gateway
+        type: string
+      from_cluster_id:
+        type: string
+      from_cluster_name:
+        type: string
+      status:
+        description: active, inactive
+        type: string
+      to_cluster_id:
+        type: string
+      to_cluster_name:
+        type: string
+    type: object
+  models.ClusterHealthResponse:
+    properties:
+      cluster:
+        allOf:
+        - $ref: '#/definitions/models.Cluster'
+        description: Cluster relation
+      cluster_id:
+        type: string
+      cluster_name:
+        type: string
+      connection_status:
+        description: Connection test result
+        type: string
+      created_at:
+        $ref: '#/definitions/models.CustomTime'
+      error_message:
+        description: error details if failed
+        type: string
+      host_info:
+        type: string
+      id:
+        type: string
+      monitor_url:
+        description: monitor endpoint URL
+        type: string
+      nats_url:
+        description: Additional monitoring data
+        type: string
+      response_time:
+        description: milliseconds
+        type: integer
+      status:
+        $ref: '#/definitions/models.ClusterHealthStatus'
+      test_type:
+        description: auto, manual
+        type: string
+      tested_at:
+        allOf:
+        - $ref: '#/definitions/models.CustomTime'
+        description: when the test was performed
+      updated_at:
+        $ref: '#/definitions/models.CustomTime'
+    type: object
+  models.ClusterHealthStatus:
+    enum:
+    - healthy
+    - unhealthy
+    - unknown
+    type: string
+    x-enum-varnames:
+    - ClusterHealthStatusHealthy
+    - ClusterHealthStatusUnhealthy
+    - ClusterHealthStatusUnknown
+  models.ClusterInfo:
+    properties:
+      leader:
+        type: string
+      name:
+        type: string
+      replicas:
+        items:
+          type: string
+        type: array
+    type: object
+  models.ClusterMonitoringDashboardResponse:
+    properties:
+      last_update_time:
+        $ref: '#/definitions/models.CustomTime'
+      recent_failures:
+        items:
+          $ref: '#/definitions/models.ClusterHealthResponse'
+        type: array
+      stats:
+        $ref: '#/definitions/models.ClusterStats'
+      unhealthy_count:
+        type: integer
+    type: object
+  models.ClusterStats:
+    properties:
+      healthy_clusters:
+        type: integer
+      total_clusters:
+        type: integer
+      unhealthy_clusters:
+        type: integer
+      unknown_clusters:
+        type: integer
+    type: object
+  models.ClusterStatus:
+    enum:
+    - active
+    - disabled
+    type: string
+    x-enum-varnames:
+    - ClusterStatusActive
+    - ClusterStatusDisabled
+  models.ClusterTopologyNode:
+    properties:
+      cluster_id:
+        type: string
+      cluster_name:
+        type: string
+      connection_status:
+        description: connected, isolated, partial
+        type: string
+      gateway_port:
+        type: integer
+      gateway_urls:
+        items:
+          type: string
+        type: array
+      host:
+        type: string
+      incoming_connections:
+        items:
+          $ref: '#/definitions/models.ClusterConnection'
+        type: array
+      monitor_port:
+        type: integer
+      outgoing_connections:
+        items:
+          $ref: '#/definitions/models.ClusterConnection'
+        type: array
+    type: object
+  models.ClusterTopologyResponse:
+    properties:
+      connected_clusters:
+        type: integer
+      isolated_clusters:
+        items:
+          $ref: '#/definitions/models.ClusterTopologyNode'
+        type: array
+      isolated_count:
+        type: integer
+      super_cluster_count:
+        type: integer
+      super_cluster_groups:
+        items:
+          $ref: '#/definitions/models.SuperClusterGroup'
+        type: array
+      total_clusters:
+        type: integer
+    type: object
+  models.Config:
+    properties:
+      domain:
+        type: string
+      max_memory:
+        type: integer
+      max_storage:
+        type: integer
+      store_dir:
+        type: string
+      strict:
+        type: boolean
+      sync_interval:
+        type: integer
+    type: object
+  models.ConfigDifference:
+    properties:
+      cluster_value: {}
+      database_value: {}
+      field:
+        type: string
+    type: object
+  models.Consumer:
+    properties:
+      ack_policy:
+        $ref: '#/definitions/models.ConsumerAckPolicy'
+      ack_wait:
+        type: integer
+      backoff:
+        items:
+          type: integer
+        type: array
+      consumer_type:
+        $ref: '#/definitions/models.ConsumerType'
+      created_at:
+        $ref: '#/definitions/models.CustomTime'
+      deliver_group:
+        type: string
+      deliver_policy:
+        $ref: '#/definitions/models.ConsumerDeliverPolicy'
+      deliver_subject:
+        type: string
+      description:
+        type: string
+      durable:
+        type: string
+      filter_subject:
+        type: string
+      filter_subjects:
+        items:
+          type: string
+        type: array
+      flow_control:
+        type: boolean
+      headers_only:
+        type: boolean
+      id:
+        type: string
+      idle_heartbeat:
+        type: integer
+      inactive_threshold:
+        type: integer
+      jetstream:
+        $ref: '#/definitions/models.JetStream'
+      jetstream_id:
+        type: string
+      max_ack_pending:
+        type: integer
+      max_batch:
+        type: integer
+      max_bytes:
+        type: integer
+      max_deliver:
+        type: integer
+      max_expires:
+        type: integer
+      max_request_batch:
+        type: integer
+      max_request_expires:
+        type: integer
+      max_request_max_bytes:
+        type: integer
+      max_waiting:
+        type: integer
+      memory_storage:
+        type: boolean
+      metadata:
+        $ref: '#/definitions/models.MetadataMap'
+      mode:
+        type: string
+      name:
+        type: string
+      nats_operate_user:
+        $ref: '#/definitions/models.User'
+      nats_operate_user_id:
+        type: string
+      opt_start_seq:
+        type: integer
+      opt_start_time:
+        type: string
+      pause_until:
+        type: string
+      pinned_ttl:
+        type: integer
+      priority_groups:
+        items:
+          type: string
+        type: array
+      priority_policy:
+        $ref: '#/definitions/models.ConsumerPriorityPolicy'
+      rate_limit:
+        type: integer
+      rate_limit_bps:
+        type: integer
+      replay_policy:
+        $ref: '#/definitions/models.ConsumerReplayPolicy'
+      replicas:
+        type: integer
+      retry_policy:
+        $ref: '#/definitions/models.ConsumerRetryPolicy'
+      sample_frequency:
+        type: string
+      start_seq:
+        type: integer
+      start_time:
+        type: string
+      stats:
+        $ref: '#/definitions/models.ConsumerStats'
+      status:
+        type: string
+      sync_message:
+        type: string
+      sync_status:
+        $ref: '#/definitions/models.ConsumerSyncStatus'
+      updated_at:
+        $ref: '#/definitions/models.CustomTime'
+    type: object
+  models.ConsumerAckPolicy:
+    enum:
+    - AckExplicit
+    - AckAll
+    - AckNone
+    type: string
+    x-enum-varnames:
+    - AckExplicit
+    - AckAll
+    - AckNone
+  models.ConsumerConfigDiff:
+    properties:
+      cluster_config:
+        $ref: '#/definitions/models.ConsumerConfigView'
+      database_config:
+        $ref: '#/definitions/models.ConsumerConfigView'
+      differences:
+        items:
+          $ref: '#/definitions/models.ConfigDifference'
+        type: array
+      has_difference:
+        type: boolean
+    type: object
+  models.ConsumerConfigView:
+    properties:
+      ack_policy:
+        $ref: '#/definitions/models.ConsumerAckPolicy'
+      ack_wait:
+        type: integer
+      deliver_group:
+        type: string
+      deliver_policy:
+        $ref: '#/definitions/models.ConsumerDeliverPolicy'
+      deliver_subject:
+        type: string
+      description:
+        type: string
+      durable:
+        type: string
+      filter_subject:
+        type: string
+      filter_subjects:
+        items:
+          type: string
+        type: array
+      flow_control:
+        type: boolean
+      headers_only:
+        type: boolean
+      idle_heartbeat:
+        type: integer
+      inactive_threshold:
+        type: integer
+      max_ack_pending:
+        type: integer
+      max_deliver:
+        type: integer
+      max_waiting:
+        type: integer
+      memory_storage:
+        type: boolean
+      name:
+        type: string
+      opt_start_seq:
+        type: integer
+      opt_start_time:
+        type: string
+      rate_limit:
+        type: integer
+      replay_policy:
+        $ref: '#/definitions/models.ConsumerReplayPolicy'
+      replicas:
+        type: integer
+      sample_frequency:
+        type: string
+    type: object
+  models.ConsumerDeliverPolicy:
+    enum:
+    - all
+    - last
+    - new
+    - by_start_sequence
+    - by_start_time
+    - last_per_subject
+    type: string
+    x-enum-varnames:
+    - DeliverAll
+    - DeliverLast
+    - DeliverNew
+    - DeliverByStartSeq
+    - DeliverByStartTime
+    - DeliverLastPerSubject
+  models.ConsumerPriorityPolicy:
+    enum:
+    - ""
+    - pinned
+    type: string
+    x-enum-varnames:
+    - PriorityNone
+    - PriorityPinned
+  models.ConsumerReplayPolicy:
+    enum:
+    - instant
+    - original
+    type: string
+    x-enum-varnames:
+    - ReplayInstant
+    - ReplayOriginal
+  models.ConsumerRetryPolicy:
+    enum:
+    - exponential
+    - uniform
+    type: string
+    x-enum-varnames:
+    - RetryExponential
+    - RetryUniform
+  models.ConsumerStats:
+    properties:
+      ack_floor_seq:
+        type: integer
+      ack_floor_stream:
+        type: integer
+      cluster:
+        $ref: '#/definitions/models.ClusterInfo'
+      consumer_name:
+        type: string
+      created:
+        $ref: '#/definitions/models.CustomTime'
+      delivered_seq:
+        type: integer
+      delivered_stream:
+        type: integer
+      delivered_time:
+        $ref: '#/definitions/models.CustomTime'
+      num_ack_pending:
+        type: integer
+      num_pending:
+        type: integer
+      num_redelivered:
+        type: integer
+      num_waiting:
+        type: integer
+      pause_remaining:
+        example: 0
+        type: integer
+      paused:
+        type: boolean
+      push_bound:
+        type: boolean
+      stream_name:
+        type: string
+      timestamp:
+        $ref: '#/definitions/models.CustomTime'
+    type: object
+  models.ConsumerSyncStatus:
+    enum:
+    - pending
+    - syncing
+    - synced
+    - failed
+    type: string
+    x-enum-varnames:
+    - ConsumerSyncPending
+    - ConsumerSyncSyncing
+    - ConsumerSyncSynced
+    - ConsumerSyncFailed
+  models.ConsumerType:
+    enum:
+    - pull
+    - push
+    type: string
+    x-enum-varnames:
+    - ConsumerTypePull
+    - ConsumerTypePush
+  models.CreateAccountRequest:
+    properties:
+      description:
+        type: string
+      limits:
+        $ref: '#/definitions/models.AccountLimits'
+      name:
+        type: string
+      origin_cluster_id:
+        type: string
+    required:
+    - name
+    type: object
+  models.CreateClusterRequest:
+    properties:
+      cluster_port:
+        description: 默认6222
+        type: integer
+      description:
+        type: string
+      gateway_port:
+        description: 默认7222
+        type: integer
+      host:
+        description: NATS连接配置
+        type: string
+      monitor_port:
+        description: 默认8222
+        type: integer
+      name:
+        type: string
+      nats_port:
+        description: 默认4222
+        type: integer
+      system_account_id:
+        description: 系统账户配置
+        type: string
+      system_user_id:
+        type: string
+    required:
+    - host
+    - name
+    type: object
+  models.CreateConsumerRequest:
+    properties:
+      ack_policy:
+        $ref: '#/definitions/models.ConsumerAckPolicy'
+      ack_wait:
+        type: string
+      backoff:
+        items:
+          type: string
+        type: array
+      consumer_name:
+        type: string
+      consumer_type:
+        $ref: '#/definitions/models.ConsumerType'
+      deliver_group:
+        type: string
+      deliver_policy:
+        $ref: '#/definitions/models.ConsumerDeliverPolicy'
+      deliver_subject:
+        type: string
+      description:
+        type: string
+      durable:
+        type: string
+      filter_subject:
+        type: string
+      filter_subjects:
+        items:
+          type: string
+        type: array
+      flow_control:
+        type: boolean
+      headers_only:
+        type: boolean
+      idle_heartbeat:
+        type: string
+      inactive_threshold:
+        type: integer
+      jetstream_id:
+        type: string
+      max_ack_pending:
+        type: integer
+      max_batch:
+        type: integer
+      max_bytes:
+        type: integer
+      max_deliver:
+        type: integer
+      max_expires:
+        type: string
+      max_request_batch:
+        type: integer
+      max_request_expires:
+        type: integer
+      max_request_max_bytes:
+        type: integer
+      max_waiting:
+        type: integer
+      memory_storage:
+        type: boolean
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
+      mode:
+        enum:
+        - push
+        - pull
+        type: string
+      name:
+        type: string
+      nats_operate_user_id:
+        type: string
+      opt_start_seq:
+        type: integer
+      opt_start_time:
+        type: string
+      rate_limit:
+        type: integer
+      rate_limit_bps:
+        type: integer
+      replay_policy:
+        $ref: '#/definitions/models.ConsumerReplayPolicy'
+      replicas:
+        type: integer
+      retry_policy:
+        $ref: '#/definitions/models.ConsumerRetryPolicy'
+      sample_freq:
+        type: string
+      start_seq:
+        type: integer
+      start_time:
+        type: string
+      stream_name:
+        type: string
+    required:
+    - ack_policy
+    - consumer_name
+    - mode
+    - stream_name
+    type: object
+  models.CreateJetStreamRequest:
+    properties:
+      allow_direct:
+        example: false
+        type: boolean
+      allow_rollup_hdrs:
+        example: false
+        type: boolean
+      cluster_id:
+        example: cluster-123
+        type: string
+      compression:
+        allOf:
+        - $ref: '#/definitions/models.JetStreamCompressionType'
+        example: none
+      deny_delete:
+        example: false
+        type: boolean
+      deny_purge:
+        example: false
+        type: boolean
+      description:
+        example: Event logging stream
+        type: string
+      discard:
+        allOf:
+        - $ref: '#/definitions/models.JetStreamDiscardPolicy'
+        example: old
+      duplicate_window:
+        description: 2分钟（秒）
+        example: 120
+        type: integer
+      max_age:
+        description: 24小时（秒）
+        example: 86400
+        type: integer
+      max_bytes_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 最大字节数单位
+        example: GB
+      max_bytes_value:
+        description: 最大字节数值
+        example: 1
+        type: number
+      max_consumers:
+        example: 100
+        type: integer
+      max_msg_size_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 最大单条消息大小单位
+        example: MB
+      max_msg_size_value:
+        description: 最大单条消息大小数值
+        example: 1
+        type: number
+      max_msgs:
+        description: 限制配置 - 带单位的字节数
+        example: 1000000
+        type: integer
+      metadata:
+        $ref: '#/definitions/models.MetadataMap'
+      mirror_direct:
+        example: false
+        type: boolean
+      name:
+        example: EVENTS
+        type: string
+      nats_operate_user_id:
+        example: user-123
+        type: string
+      no_ack:
+        example: false
+        type: boolean
+      placement_cluster:
+        description: 放置配置
+        type: string
+      placement_tags:
+        items:
+          type: string
+        type: array
+      replicas:
+        description: 副本和持久化配置
+        example: 1
+        type: integer
+      retention:
+        allOf:
+        - $ref: '#/definitions/models.JetStreamRetentionPolicy'
+        example: limits
+      storage:
+        allOf:
+        - $ref: '#/definitions/models.JetStreamStorageType'
+        example: file
+      subjects:
+        description: 流配置
+        example:
+        - events.*
+        - logs.*
+        items:
+          type: string
+        type: array
+    required:
+    - cluster_id
+    - name
+    - nats_operate_user_id
+    - subjects
+    type: object
+  models.CreateUserRequest:
+    properties:
+      department:
+        description: 部门
+        type: string
+      description:
+        type: string
+      limits:
+        $ref: '#/definitions/models.UserLimits'
+      name:
+        type: string
+      permissions:
+        $ref: '#/definitions/models.UserPermissions'
+      project:
+        description: 项目
+        type: string
+      role:
+        description: 用户角色
+        type: string
+    required:
+    - name
+    type: object
+  models.CustomTime:
+    properties:
+      time.Time:
+        type: string
+    type: object
+  models.EntityType:
+    enum:
+    - account
+    - user
+    type: string
+    x-enum-varnames:
+    - EntityTypeAccount
+    - EntityTypeUser
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  models.ExportInfo:
+    properties:
+      description:
+        type: string
+      info_url:
+        type: string
+    type: object
+  models.ExportType:
+    enum:
+    - stream
+    - service
+    type: string
+    x-enum-varnames:
+    - ExportTypeStream
+    - ExportTypeService
+  models.GatewayStatsDetail:
+    properties:
+      gwid:
+        type: integer
+      inbound_connections:
+        type: integer
+      name:
+        type: string
+      received:
+        $ref: '#/definitions/models.TrafficStats'
+      sent:
+        $ref: '#/definitions/models.TrafficStats'
+    type: object
+  models.ImportType:
+    enum:
+    - stream
+    - service
+    type: string
+    x-enum-varnames:
+    - ImportTypeStream
+    - ImportTypeService
+  models.JSONMap:
+    additionalProperties: true
+    type: object
+  models.JWTResponse:
+    properties:
+      claims: {}
+      raw_token:
+        type: string
+    type: object
+  models.JWTTask:
+    properties:
+      cluster_ids:
+        allOf:
+        - $ref: '#/definitions/models.JSONMap'
+        description: Multi-cluster support
+      completed_at:
+        $ref: '#/definitions/models.CustomTime'
+      created_at:
+        $ref: '#/definitions/models.CustomTime'
+      entity_id:
+        type: string
+      entity_type:
+        $ref: '#/definitions/models.EntityType'
+      error:
+        type: string
+      id:
+        type: string
+      max_retries:
+        type: integer
+      operation:
+        $ref: '#/definitions/models.Operation'
+      public_key:
+        description: 冗余存储账户公钥，用于快照和追溯
+        type: string
+      retries:
+        type: integer
+      status:
+        $ref: '#/definitions/models.TaskStatus'
+      sync_results:
+        allOf:
+        - $ref: '#/definitions/models.JSONMap'
+        description: 各集群同步结果
+      trigger_type:
+        allOf:
+        - $ref: '#/definitions/models.TriggerType'
+        description: 触发方式：自动或手动
+      updated_at:
+        $ref: '#/definitions/models.CustomTime'
+    type: object
+  models.JetStream:
+    properties:
+      allow_direct:
+        type: boolean
+      allow_rollup_hdrs:
+        type: boolean
+      bytes_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 当前字节数单位
+      bytes_value:
+        description: 当前字节数值
+        type: number
+      cluster:
+        $ref: '#/definitions/models.Cluster'
+      cluster_id:
+        type: string
+      compression:
+        $ref: '#/definitions/models.JetStreamCompressionType'
+      created_at:
+        allOf:
+        - $ref: '#/definitions/models.CustomTime'
+        description: 时间戳
+      deny_delete:
+        type: boolean
+      deny_purge:
+        type: boolean
+      description:
+        type: string
+      discard:
+        $ref: '#/definitions/models.JetStreamDiscardPolicy'
+      discard_new_per_subject:
+        description: 高级配置
+        type: boolean
+      duplicate_window:
+        description: 重复检测窗口（秒）
+        type: integer
+      first_seq:
+        description: 第一个序列号
+        type: integer
+      id:
+        type: string
+      last_seq:
+        description: 最后一个序列号
+        type: integer
+      max_age:
+        description: 消息最大存活时间（秒）
+        type: integer
+      max_bytes_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 最大字节数单位
+      max_bytes_value:
+        description: 最大字节数值
+        type: number
+      max_consumers:
+        description: 最大消费者数量
+        type: integer
+      max_msg_size_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 最大单条消息大小单位
+      max_msg_size_value:
+        description: 最大单条消息大小数值
+        type: number
+      max_msgs:
+        description: 限制配置
+        type: integer
+      max_msgs_per_subject:
+        description: 每个主题的最大消息数量
+        type: integer
+      messages:
+        description: 统计信息
+        type: integer
+      metadata:
+        $ref: '#/definitions/models.MetadataMap'
+      mirror_direct:
+        type: boolean
+      name:
+        type: string
+      nats_operate_user:
+        allOf:
+        - $ref: '#/definitions/models.User'
+        description: 关联的NATS操作用户信息（不存储在数据库中）
+      nats_operate_user_id:
+        description: 重构字段：操作NATS的用户身份
+        type: string
+      no_ack:
+        description: 是否禁用确认
+        type: boolean
+      num_consumers:
+        description: 当前消费者数量
+        type: integer
+      placement_cluster:
+        description: 放置标签和元数据
+        type: string
+      placement_tags:
+        items:
+          type: string
+        type: array
+      replicas:
+        description: 副本和持久化配置
+        type: integer
+      retention:
+        $ref: '#/definitions/models.JetStreamRetentionPolicy'
+      sealed:
+        description: 是否密封流
+        type: boolean
+      status:
+        description: active, inactive, error
+        type: string
+      storage:
+        $ref: '#/definitions/models.JetStreamStorageType'
+      subjects:
+        description: 流配置
+        items:
+          type: string
+        type: array
+      sync_message:
+        type: string
+      sync_status:
+        allOf:
+        - $ref: '#/definitions/models.JetStreamSyncStatus'
+        description: 新增：同步状态管理
+      updated_at:
+        $ref: '#/definitions/models.CustomTime'
+    type: object
+  models.JetStreamAPIStats:
+    properties:
+      errors:
+        type: integer
+      level:
+        type: integer
+      total:
+        type: integer
+    type: object
+  models.JetStreamAccountLimits:
+    properties:
+      consumers:
+        description: max number of consumers
+        type: integer
+      disk_max_stream_bytes_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 单位
+      disk_max_stream_bytes_value:
+        description: 数值
+        type: number
+      disk_storage_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 单位
+      disk_storage_value:
+        description: 数值
+        type: number
+      enabled:
+        description: Core JetStream settings
+        type: boolean
+      max_ack_pending:
+        description: max ack pending
+        type: integer
+      max_bytes_required:
+        description: require max_bytes to be set
+        type: boolean
+      memory_max_stream_bytes_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 单位
+      memory_max_stream_bytes_value:
+        description: 数值
+        type: number
+      memory_storage_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 单位
+      memory_storage_value:
+        description: 数值
+        type: number
+      streams:
+        description: max number of streams
+        type: integer
+    type: object
+  models.JetStreamCompressionType:
+    enum:
+    - none
+    - s2
+    type: string
+    x-enum-varnames:
+    - JetStreamCompressionNone
+    - JetStreamCompressionS2
+  models.JetStreamConfig:
+    properties:
+      domain:
+        type: string
+      max_memory:
+        type: integer
+      max_storage:
+        type: integer
+      strict:
+        type: boolean
+      sync_interval:
+        type: integer
+    type: object
+  models.JetStreamConfigDiff:
+    properties:
+      cluster_config:
+        $ref: '#/definitions/models.StreamConfig'
+      database_config:
+        $ref: '#/definitions/models.StreamConfig'
+      differences:
+        items:
+          $ref: '#/definitions/models.ConfigDifference'
+        type: array
+      has_difference:
+        type: boolean
+    type: object
+  models.JetStreamDiscardPolicy:
+    enum:
+    - old
+    - new
+    type: string
+    x-enum-varnames:
+    - JetStreamDiscardOld
+    - JetStreamDiscardNew
+  models.JetStreamMeta:
+    properties:
+      cluster_size:
+        type: integer
+      leader:
+        type: string
+      name:
+        type: string
+      peer:
+        type: string
+      pending:
+        type: integer
+    type: object
+  models.JetStreamPermissions:
+    properties:
+      publish:
+        $ref: '#/definitions/models.JetStreamPublishPermissions'
+      subscribe:
+        $ref: '#/definitions/models.JetStreamSubscribePermissions'
+    type: object
+  models.JetStreamPublishPermissions:
+    properties:
+      allow:
+        description: allowed stream subjects
+        items:
+          type: string
+        type: array
+      deny:
+        description: denied stream subjects
+        items:
+          type: string
+        type: array
+    type: object
+  models.JetStreamResponse:
+    properties:
+      account_details:
+        items:
+          $ref: '#/definitions/models.AccountDetail'
+        type: array
+      accounts:
+        type: integer
+      api:
+        $ref: '#/definitions/models.APIStats'
+      bytes:
+        type: integer
+      config:
+        $ref: '#/definitions/models.Config'
+      consumers:
+        type: integer
+      ha_assets:
+        type: integer
+      limits:
+        additionalProperties: true
+        type: object
+      memory_unit:
+        $ref: '#/definitions/models.StorageUnit'
+      memory_value:
+        type: number
+      messages:
+        type: integer
+      meta_cluster:
+        $ref: '#/definitions/models.MetaCluster'
+      now:
+        type: string
+      reserved_memory_unit:
+        $ref: '#/definitions/models.StorageUnit'
+      reserved_memory_value:
+        type: number
+      reserved_storage_unit:
+        $ref: '#/definitions/models.StorageUnit'
+      reserved_storage_value:
+        type: number
+      server_id:
+        type: string
+      storage_unit:
+        $ref: '#/definitions/models.StorageUnit'
+      storage_value:
+        type: number
+      streams:
+        type: integer
+      total:
+        type: integer
+    type: object
+  models.JetStreamRetentionPolicy:
+    enum:
+    - limits
+    - interest
+    - workqueue
+    type: string
+    x-enum-varnames:
+    - JetStreamRetentionLimits
+    - JetStreamRetentionInterest
+    - JetStreamRetentionWorkQueue
+  models.JetStreamStats:
+    properties:
+      accounts:
+        type: integer
+      api:
+        $ref: '#/definitions/models.JetStreamAPIStats'
+      ha_assets:
+        type: integer
+      memory:
+        type: integer
+      reserved_memory:
+        type: integer
+      reserved_storage:
+        type: integer
+      storage:
+        type: integer
+    type: object
+  models.JetStreamStatsDetail:
+    properties:
+      config:
+        $ref: '#/definitions/models.JetStreamConfig'
+      limits: {}
+      meta:
+        $ref: '#/definitions/models.JetStreamMeta'
+      stats:
+        $ref: '#/definitions/models.JetStreamStats'
+    type: object
+  models.JetStreamStorageType:
+    enum:
+    - file
+    - memory
+    type: string
+    x-enum-varnames:
+    - JetStreamStorageFile
+    - JetStreamStorageMemory
+  models.JetStreamSubscribePermissions:
+    properties:
+      allow:
+        description: allowed stream subjects
+        items:
+          type: string
+        type: array
+      deny:
+        description: denied stream subjects
+        items:
+          type: string
+        type: array
+    type: object
+  models.JetStreamSyncStatus:
+    enum:
+    - pending
+    - syncing
+    - synced
+    - failed
+    type: string
+    x-enum-comments:
+      JetStreamSyncFailed: 同步失败
+      JetStreamSyncPending: 待同步
+      JetStreamSyncSynced: 已同步
+      JetStreamSyncSyncing: 同步中
+    x-enum-descriptions:
+    - 待同步
+    - 同步中
+    - 已同步
+    - 同步失败
+    x-enum-varnames:
+    - JetStreamSyncPending
+    - JetStreamSyncSyncing
+    - JetStreamSyncSynced
+    - JetStreamSyncFailed
+  models.JetStreamUserLimits:
+    properties:
+      consumers:
+        description: max consumers user can create
+        type: integer
+      disk_storage_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 单位
+      disk_storage_value:
+        description: 数值
+        type: number
+      max_ack_pending:
+        description: max ack pending
+        type: integer
+      memory_storage_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 单位
+      memory_storage_value:
+        description: 数值
+        type: number
+      streams:
+        description: max streams user can create
+        type: integer
+    type: object
+  models.ManualSyncJWTRequest:
+    properties:
+      cluster_ids:
+        description: 要同步到的集群ID列表
+        items:
+          type: string
+        type: array
+    required:
+    - cluster_ids
+    type: object
+  models.MetaCluster:
+    properties:
+      cluster_size:
+        type: integer
+      leader:
+        type: string
+      name:
+        type: string
+      peer:
+        type: string
+      pending:
+        type: integer
+      replicas:
+        items:
+          $ref: '#/definitions/models.Replica'
+        type: array
+    type: object
+  models.MetadataMap:
+    additionalProperties:
+      type: string
+    type: object
+  models.Operation:
+    enum:
+    - create
+    - update
+    - disable
+    - enable
+    type: string
+    x-enum-varnames:
+    - OperationCreate
+    - OperationUpdate
+    - OperationDisable
+    - OperationEnable
+  models.PaginatedResponse:
+    properties:
+      data: {}
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  models.PermissionRules:
+    properties:
+      allow:
+        items:
+          type: string
+        type: array
+      deny:
+        items:
+          type: string
+        type: array
+    type: object
+  models.Replica:
+    properties:
+      active:
+        type: integer
+      current:
+        type: boolean
+      name:
+        type: string
+      peer:
+        type: string
+    type: object
+  models.ResponsePermissions:
+    properties:
+      expires:
+        description: Duration in seconds
+        type: integer
+      max_messages:
+        type: integer
+    type: object
+  models.RouteStats:
+    properties:
+      name:
+        type: string
+      pending:
+        type: integer
+      received:
+        $ref: '#/definitions/models.TrafficStats'
+      rid:
+        type: integer
+      sent:
+        $ref: '#/definitions/models.TrafficStats'
+    type: object
+  models.ServerInfo:
+    properties:
+      auth_required:
+        type: boolean
+      cluster:
+        type: string
+      connect_urls:
+        items:
+          type: string
+        type: array
+      domain:
+        type: string
+      flags:
+        type: integer
+      go:
+        type: string
+      host:
+        type: string
+      id:
+        type: string
+      ip:
+        type: string
+      jetstream:
+        type: boolean
+      name:
+        type: string
+      port:
+        type: integer
+      seq:
+        type: integer
+      time:
+        type: string
+      tls_required:
+        type: boolean
+      tls_verify:
+        type: boolean
+      ver:
+        type: string
+      ws_connect_urls:
+        items:
+          type: string
+        type: array
+      xkey:
+        type: string
+    type: object
+  models.ServerListResponse:
+    properties:
+      cluster_id:
+        type: string
+      requested_at:
+        $ref: '#/definitions/models.CustomTime'
+      servers:
+        items:
+          $ref: '#/definitions/models.ServerStatsMsg'
+        type: array
+      timeout:
+        type: string
+      total_servers:
+        type: integer
+    type: object
+  models.ServerStats:
+    properties:
+      active_accounts:
+        type: integer
+      active_servers:
+        type: integer
+      config_load_time:
+        type: string
+      connections:
+        type: integer
+      cores:
+        type: integer
+      cpu:
+        type: number
+      gateways:
+        items:
+          $ref: '#/definitions/models.GatewayStatsDetail'
+        type: array
+      gomaxprocs:
+        type: integer
+      http_req_stats:
+        additionalProperties:
+          format: int64
+          type: integer
+        description: 向后兼容的字段
+        type: object
+      in_bytes:
+        type: integer
+      in_msgs:
+        type: integer
+      jetstream:
+        $ref: '#/definitions/models.JetStreamStatsDetail'
+      leafnodes:
+        type: integer
+      mem:
+        type: integer
+      now:
+        type: string
+      out_bytes:
+        type: integer
+      out_msgs:
+        type: integer
+      received:
+        $ref: '#/definitions/models.TrafficStats'
+      remotes:
+        type: integer
+      routes:
+        description: for backward compatibility
+        type: integer
+      sent:
+        $ref: '#/definitions/models.TrafficStats'
+      slow_consumers:
+        type: integer
+      start:
+        type: string
+      subscriptions:
+        type: integer
+      total_connections:
+        type: integer
+      uptime:
+        type: string
+    type: object
+  models.ServerStatsMsg:
+    properties:
+      server:
+        $ref: '#/definitions/models.ServerInfo'
+      statsz:
+        $ref: '#/definitions/models.ServerStats'
+    type: object
+  models.SimplifiedUserResponse:
+    properties:
+      account_id:
+        description: 所属账号ID
+        type: string
+      id:
+        description: 用户ID
+        type: string
+      name:
+        description: 用户名
+        type: string
+    type: object
+  models.StorageUnit:
+    enum:
+    - B
+    - KB
+    - MB
+    - GB
+    - TB
+    type: string
+    x-enum-comments:
+      StorageUnitBytes: 字节
+      StorageUnitGB: 吉字节
+      StorageUnitKB: 千字节
+      StorageUnitMB: 兆字节
+      StorageUnitTB: 太字节
+    x-enum-descriptions:
+    - 字节
+    - 千字节
+    - 兆字节
+    - 吉字节
+    - 太字节
+    x-enum-varnames:
+    - StorageUnitBytes
+    - StorageUnitKB
+    - StorageUnitMB
+    - StorageUnitGB
+    - StorageUnitTB
+  models.StreamConfig:
+    properties:
+      allow_direct:
+        type: boolean
+      allow_rollup_hdrs:
+        type: boolean
+      compression:
+        $ref: '#/definitions/models.JetStreamCompressionType'
+      deny_delete:
+        type: boolean
+      deny_purge:
+        type: boolean
+      discard:
+        $ref: '#/definitions/models.JetStreamDiscardPolicy'
+      duplicate_window:
+        type: integer
+      max_age:
+        type: integer
+      max_bytes_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 字节数单位
+      max_bytes_value:
+        description: 字节数值
+        type: number
+      max_msgs:
+        type: integer
+      name:
+        type: string
+      no_ack:
+        description: 高级配置
+        type: boolean
+      num_replicas:
+        type: integer
+      retention:
+        $ref: '#/definitions/models.JetStreamRetentionPolicy'
+      storage:
+        $ref: '#/definitions/models.JetStreamStorageType'
+      subjects:
+        items:
+          type: string
+        type: array
+    type: object
+  models.SuperClusterGroup:
+    properties:
+      clusters:
+        items:
+          $ref: '#/definitions/models.ClusterTopologyNode'
+        type: array
+      connections:
+        items:
+          $ref: '#/definitions/models.ClusterConnection'
+        type: array
+      group_id:
+        type: string
+      group_name:
+        type: string
+    type: object
+  models.TaskStatus:
+    enum:
+    - pending
+    - processing
+    - completed
+    - failed
+    - retrying
+    type: string
+    x-enum-varnames:
+    - TaskStatusPending
+    - TaskStatusProcessing
+    - TaskStatusCompleted
+    - TaskStatusFailed
+    - TaskStatusRetrying
+  models.TimeRestrictions:
+    properties:
+      days_of_week:
+        description: Days of week (0=Sunday, 6=Saturday), empty means all days
+        items:
+          type: integer
+        type: array
+      end:
+        description: End time in RFC3339 format, empty means no end restriction
+        type: string
+      hours_of_day:
+        description: Hours of day (0-23), empty means all hours
+        items:
+          type: integer
+        type: array
+      start:
+        description: Start time in RFC3339 format, empty means no start restriction
+        type: string
+      timezone:
+        description: Timezone for time calculations, defaults to UTC
+        type: string
+    type: object
+  models.TrafficStats:
+    properties:
+      bytes:
+        type: integer
+      msgs:
+        type: integer
+    type: object
+  models.TriggerType:
+    enum:
+    - auto
+    - manual
+    type: string
+    x-enum-comments:
+      TriggerTypeAuto: 自动触发（账户/用户创建/更新时）
+      TriggerTypeManual: 手动触发（用户点击同步按钮）
+    x-enum-descriptions:
+    - 自动触发（账户/用户创建/更新时）
+    - 手动触发（用户点击同步按钮）
+    x-enum-varnames:
+    - TriggerTypeAuto
+    - TriggerTypeManual
+  models.UpdateAccountRequest:
+    properties:
+      description:
+        type: string
+      limits:
+        $ref: '#/definitions/models.AccountLimits'
+      name:
+        type: string
+      origin_cluster_id:
+        type: string
+      status:
+        $ref: '#/definitions/models.AccountStatus'
+    type: object
+  models.UpdateClusterRequest:
+    properties:
+      cluster_port:
+        type: integer
+      description:
+        type: string
+      gateway_port:
+        type: integer
+      host:
+        description: NATS连接配置
+        type: string
+      monitor_port:
+        type: integer
+      name:
+        type: string
+      nats_port:
+        type: integer
+      status:
+        $ref: '#/definitions/models.ClusterStatus'
+      system_account_id:
+        description: 系统账户配置
+        type: string
+      system_user_id:
+        type: string
+    type: object
+  models.UpdateConsumerRequest:
+    properties:
+      ack_policy:
+        $ref: '#/definitions/models.ConsumerAckPolicy'
+      ack_wait:
+        type: string
+      backoff:
+        items:
+          type: string
+        type: array
+      consumer_name:
+        type: string
+      consumer_type:
+        $ref: '#/definitions/models.ConsumerType'
+      deliver_group:
+        type: string
+      deliver_policy:
+        $ref: '#/definitions/models.ConsumerDeliverPolicy'
+      deliver_subject:
+        type: string
+      description:
+        type: string
+      durable:
+        type: string
+      filter_subject:
+        type: string
+      filter_subjects:
+        items:
+          type: string
+        type: array
+      flow_control:
+        type: boolean
+      headers_only:
+        type: boolean
+      idle_heartbeat:
+        type: string
+      inactive_threshold:
+        type: integer
+      jetstream_id:
+        type: string
+      max_ack_pending:
+        type: integer
+      max_batch:
+        type: integer
+      max_bytes:
+        type: integer
+      max_deliver:
+        type: integer
+      max_expires:
+        type: string
+      max_waiting:
+        type: integer
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
+      mode:
+        type: string
+      name:
+        type: string
+      rate_limit:
+        type: integer
+      rate_limit_bps:
+        type: integer
+      replay_policy:
+        $ref: '#/definitions/models.ConsumerReplayPolicy'
+      replicas:
+        type: integer
+      retry_policy:
+        $ref: '#/definitions/models.ConsumerRetryPolicy'
+      sample_freq:
+        type: string
+      stream_name:
+        type: string
+    type: object
+  models.UpdateJetStreamRequest:
+    properties:
+      allow_direct:
+        type: boolean
+      allow_rollup_hdrs:
+        type: boolean
+      deny_delete:
+        type: boolean
+      deny_purge:
+        type: boolean
+      description:
+        type: string
+      discard:
+        $ref: '#/definitions/models.JetStreamDiscardPolicy'
+      duplicate_window:
+        type: integer
+      max_age:
+        type: integer
+      max_bytes_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 最大字节数单位
+      max_bytes_value:
+        description: 最大字节数值
+        type: number
+      max_consumers:
+        type: integer
+      max_msg_size_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 最大单条消息大小单位
+      max_msg_size_value:
+        description: 最大单条消息大小数值
+        type: number
+      max_msgs:
+        description: 限制配置 - 带单位的字节数
+        type: integer
+      metadata:
+        allOf:
+        - $ref: '#/definitions/models.MetadataMap'
+        description: 元数据
+      mirror_direct:
+        type: boolean
+      nats_operate_user_id:
+        example: user-123
+        type: string
+      no_ack:
+        type: boolean
+      placement_tags:
+        description: 放置配置
+        items:
+          type: string
+        type: array
+      replicas:
+        description: 副本和持久化配置
+        type: integer
+      retention:
+        $ref: '#/definitions/models.JetStreamRetentionPolicy'
+      subjects:
+        description: 流配置（某些字段创建后不能修改）
+        items:
+          type: string
+        type: array
+    required:
+    - nats_operate_user_id
+    type: object
+  models.UpdateUserRequest:
+    properties:
+      department:
+        description: 部门
+        type: string
+      description:
+        type: string
+      is_admin:
+        description: 管理员权限，使用指针类型以支持可选更新
+        type: boolean
+      limits:
+        $ref: '#/definitions/models.UserLimits'
+      name:
+        type: string
+      permissions:
+        $ref: '#/definitions/models.UserPermissions'
+      project:
+        description: 项目
+        type: string
+      role:
+        description: 用户角色
+        type: string
+      status:
+        $ref: '#/definitions/models.UserStatus'
+    type: object
+  models.User:
+    properties:
+      account_id:
+        type: string
+      created_at:
+        $ref: '#/definitions/models.CustomTime'
+      creds_file:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_admin:
+        type: boolean
+      jwt_claims:
+        $ref: '#/definitions/models.JSONMap'
+      jwt_text:
+        description: 存储实际的JWT密文
+        type: string
+      limits:
+        $ref: '#/definitions/models.UserLimits'
+      n_key:
+        type: string
+      name:
+        type: string
+      permissions:
+        $ref: '#/definitions/models.UserPermissions'
+      public_key:
+        type: string
+      status:
+        $ref: '#/definitions/models.UserStatus'
+      updated_at:
+        $ref: '#/definitions/models.CustomTime'
+    required:
+    - account_id
+    - name
+    type: object
+  models.UserLimits:
+    properties:
+      access_controls:
+        allOf:
+        - $ref: '#/definitions/models.AccessControls'
+        description: Access control limits (optional, defaults allow all)
+      connection_types:
+        description: Connection controls
+        items:
+          type: string
+        type: array
+      jetstream_limits:
+        allOf:
+        - $ref: '#/definitions/models.JetStreamUserLimits'
+        description: JetStream user limits
+      max_data_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 单位
+      max_data_value:
+        description: 数值
+        type: number
+      max_payload_unit:
+        allOf:
+        - $ref: '#/definitions/models.StorageUnit'
+        description: 单位
+      max_payload_value:
+        description: 数值
+        type: number
+      max_subscriptions:
+        type: integer
+    type: object
+  models.UserPermissions:
+    properties:
+      jetstream:
+        allOf:
+        - $ref: '#/definitions/models.JetStreamPermissions'
+        description: JetStream permissions
+      publish:
+        $ref: '#/definitions/models.PermissionRules'
+      response:
+        $ref: '#/definitions/models.ResponsePermissions'
+      subscribe:
+        $ref: '#/definitions/models.PermissionRules'
+    type: object
+  models.UserStatus:
+    enum:
+    - active
+    - disabled
+    type: string
+    x-enum-varnames:
+    - UserStatusActive
+    - UserStatusDisabled
+  service.JWTTaskStats:
+    properties:
+      completed:
+        type: integer
+      failed:
+        type: integer
+      pending:
+        type: integer
+      processing:
+        type: integer
+      retrying:
+        type: integer
+      total:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: API for managing NATS control plane with multi-cluster support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: NATS Control API
+  version: "1.0"
+paths:
+  /accounts:
+    get:
+      description: Get a list of NATS accounts with pagination and filters
+      parameters:
+      - description: Number of accounts to return (default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Number of accounts to skip (default 0)
+        in: query
+        name: offset
+        type: integer
+      - description: Search in account name and description
+        in: query
+        name: search
+        type: string
+      - description: Filter by account status (active/disabled)
+        in: query
+        name: status
+        type: string
+      - description: Filter by account type (system/normal)
+        in: query
+        name: account_type
+        type: string
+      - description: Filter by origin cluster ID
+        in: query
+        name: cluster_id
+        type: string
+      - description: Sort field (name/created_at/updated_at/status)
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of accounts with pagination
+          schema:
+            $ref: '#/definitions/models.AccountListResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List accounts
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Create a new NATS account with the specified configuration
+      parameters:
+      - description: Account creation request
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created account
+          schema:
+            $ref: '#/definitions/models.Account'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new NATS account
+      tags:
+      - accounts
+  /accounts/{id}:
+    delete:
+      description: Delete a NATS account and remove it from the system
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Cannot delete account with associated users
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete account
+      tags:
+      - accounts
+    get:
+      description: Retrieve a NATS account by its ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account details
+          schema:
+            $ref: '#/definitions/models.Account'
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get account by ID
+      tags:
+      - accounts
+    put:
+      consumes:
+      - application/json
+      description: Update an existing NATS account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Account update request
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated account
+          schema:
+            $ref: '#/definitions/models.Account'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update account
+      tags:
+      - accounts
+  /accounts/{id}/associate:
+    post:
+      consumes:
+      - application/json
+      description: Create bidirectional communication between two accounts
+      parameters:
+      - description: Source Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Association configuration
+        in: body
+        name: association
+        required: true
+        schema:
+          $ref: '#/definitions/models.AccountAssociationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Association created successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create cross-account association
+      tags:
+      - accounts
+  /accounts/{id}/disable:
+    post:
+      description: Disable a NATS account (removes JWT from NATS server)
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account disabled successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Disable account
+      tags:
+      - accounts
+  /accounts/{id}/enable:
+    post:
+      description: Enable a NATS account (pushes JWT to NATS server)
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account enabled successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Enable account
+      tags:
+      - accounts
+  /accounts/{id}/exports:
+    post:
+      consumes:
+      - application/json
+      description: Add a subject export to an account for cross-account communication
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Export configuration
+        in: body
+        name: export
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddExportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated account
+          schema:
+            $ref: '#/definitions/models.Account'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add export to account
+      tags:
+      - accounts
+  /accounts/{id}/exports/{name}:
+    delete:
+      description: Remove a subject export from an account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Export name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated account
+          schema:
+            $ref: '#/definitions/models.Account'
+        "404":
+          description: Account or export not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Remove export from account
+      tags:
+      - accounts
+  /accounts/{id}/imports:
+    post:
+      consumes:
+      - application/json
+      description: Add a subject import to an account for cross-account communication
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Import configuration
+        in: body
+        name: import
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddImportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated account
+          schema:
+            $ref: '#/definitions/models.Account'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Add import to account
+      tags:
+      - accounts
+  /accounts/{id}/imports/{name}:
+    delete:
+      description: Remove a subject import from an account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Import name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated account
+          schema:
+            $ref: '#/definitions/models.Account'
+        "404":
+          description: Account or import not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Remove import from account
+      tags:
+      - accounts
+  /accounts/{id}/jwt:
+    get:
+      description: Get the JWT token and decoded claims for an account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account JWT and claims
+          schema:
+            $ref: '#/definitions/models.JWTResponse'
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get account JWT
+      tags:
+      - accounts
+  /accounts/{id}/sync:
+    post:
+      consumes:
+      - application/json
+      description: 手动将账户的JWT同步到选定的集群，通过异步任务处理
+      parameters:
+      - description: 账户ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 同步请求
+        in: body
+        name: sync
+        required: true
+        schema:
+          $ref: '#/definitions/models.ManualSyncJWTRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 同步任务创建成功
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: 账户未找到
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 手动同步账户JWT到指定集群
+      tags:
+      - accounts
+  /accounts/{id}/users:
+    get:
+      description: Get a list of NATS users within the specified account with pagination
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Number of users to return (default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Number of users to skip (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List users in an account
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new NATS user within the specified account
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User creation request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new user in an account
+      tags:
+      - users
+  /clusters:
+    get:
+      description: Get a list of all NATS clusters
+      parameters:
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Cluster'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List all clusters
+      tags:
+      - clusters
+    post:
+      consumes:
+      - application/json
+      description: Create a new NATS cluster with the provided configuration
+      parameters:
+      - description: Cluster data
+        in: body
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateClusterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created cluster
+          schema:
+            $ref: '#/definitions/models.Cluster'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new cluster
+      tags:
+      - clusters
+  /clusters/{id}:
+    get:
+      description: Get a specific cluster by its ID
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Cluster'
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get cluster by ID
+      tags:
+      - clusters
+    put:
+      consumes:
+      - application/json
+      description: Update a cluster's information
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated cluster data
+        in: body
+        name: cluster
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateClusterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated cluster
+          schema:
+            $ref: '#/definitions/models.Cluster'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update cluster
+      tags:
+      - clusters
+  /clusters/{id}/disable:
+    post:
+      description: Disable a cluster
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cluster disabled
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Disable cluster
+      tags:
+      - clusters
+  /clusters/{id}/enable:
+    post:
+      description: Enable a cluster
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cluster enabled
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Enable cluster
+      tags:
+      - clusters
+  /clusters/{id}/health-check:
+    post:
+      description: Trigger a manual health check for a specific cluster
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClusterHealthResponse'
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Trigger manual health check
+      tags:
+      - cluster-monitoring
+  /clusters/{id}/jetstream/{name}/consumers:
+    get:
+      description: Get all consumers under a specific stream in a JetStream
+      parameters:
+      - description: JetStream Name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: JetStream not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get consumer list for a specific stream
+      tags:
+      - cluster-monitoring
+  /clusters/{id}/jetstream/{name}/consumers/{consumer}:
+    get:
+      description: Get detailed information for a specific consumer under a stream
+        in a JetStream
+      parameters:
+      - description: JetStream Name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Consumer Name
+        in: path
+        name: consumer
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Consumer not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get consumer info for a specific consumer
+      tags:
+      - cluster-monitoring
+  /clusters/{id}/jetstream/actuality:
+    get:
+      description: Get list of stream names for a specific account in a cluster
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Account ID
+        in: query
+        name: account_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get stream names for account
+      tags:
+      - cluster-monitoring
+  /clusters/{id}/jetstream/consumer:
+    delete:
+      description: Delete a consumer from the specified JetStream stream on the cluster
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Account ID
+        in: query
+        name: account_id
+        required: true
+        type: string
+      - description: Stream Name
+        in: query
+        name: stream_name
+        required: true
+        type: string
+      - description: Consumer Name
+        in: query
+        name: consumer_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Consumer deleted successfully
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Consumer not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a consumer from JetStream cluster
+      tags:
+      - cluster-monitoring
+  /clusters/{id}/jetstream/detection:
+    get:
+      description: Get JetStream information for a specific cluster and account
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Account public key
+        in: query
+        name: acc
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get cluster JetStream information
+      tags:
+      - cluster-monitoring
+  /clusters/{id}/jetstream/info:
+    get:
+      description: Get detailed information for a specific stream in a cluster and
+        account
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Account ID
+        in: query
+        name: account_id
+        required: true
+        type: string
+      - description: Stream name
+        in: query
+        name: stream
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get detailed information for a specific stream
+      tags:
+      - cluster-monitoring
+  /clusters/{id}/jetstream/stream:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a JetStream stream directly from NATS cluster (not from
+        database)
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Account ID
+        in: query
+        name: account_id
+        required: true
+        type: string
+      - description: Stream name to delete
+        in: query
+        name: stream
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Stream deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Stream not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a JetStream stream from cluster
+      tags:
+      - clusters
+  /clusters/{id}/node-count:
+    get:
+      description: Get the number of nodes in a specific cluster
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get cluster node count
+      tags:
+      - cluster-monitoring
+  /clusters/{id}/servers:
+    get:
+      description: Get information about all servers in a NATS cluster using system
+        API
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ServerListResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List cluster servers
+      tags:
+      - cluster-monitoring
+  /clusters/{id}/test:
+    post:
+      description: Test connection to a NATS cluster
+      parameters:
+      - description: Cluster ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Connection test result
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Cluster not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Test cluster connection
+      tags:
+      - clusters
+  /clusters/health:
+    get:
+      description: Get cluster health monitoring records with filters and pagination
+      parameters:
+      - description: Filter by cluster ID
+        in: query
+        name: cluster_id
+        type: string
+      - description: Filter by health status
+        in: query
+        name: status
+        type: string
+      - description: Filter by connection status
+        in: query
+        name: connection_status
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PaginatedResponse'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get cluster health records
+      tags:
+      - cluster-monitoring
+  /clusters/monitoring/dashboard:
+    get:
+      description: Get comprehensive cluster monitoring dashboard data including stats
+        and recent failures
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClusterMonitoringDashboardResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get cluster monitoring dashboard data
+      tags:
+      - cluster-monitoring
+  /clusters/topology:
+    get:
+      description: Get super cluster topology showing gateway connections and groups
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClusterTopologyResponse'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get cluster topology
+      tags:
+      - cluster-topology
+  /consumers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of Consumers with optional filtering and pagination
+      parameters:
+      - description: Filter by Cluster ID
+        in: query
+        name: cluster_id
+        type: string
+      - description: Filter by JetStream ID
+        in: query
+        name: jetstream_id
+        type: string
+      - description: Filter by NATS operate user ID
+        in: query
+        name: nats_operate_user_id
+        type: string
+      - description: Filter by consumer type (pull, push)
+        in: query
+        name: consumer_type
+        type: string
+      - description: Filter by status (active, paused)
+        in: query
+        name: status
+        type: string
+      - description: Filter by sync status (pending, synced, failed)
+        in: query
+        name: sync_status
+        type: string
+      - description: Search by name or description
+        in: query
+        name: search
+        type: string
+      - description: Filter by durability (true, false)
+        in: query
+        name: is_durable
+        type: boolean
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 20, max: 100)'
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Consumer'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: List Consumers
+      tags:
+      - Consumer
+    post:
+      consumes:
+      - application/json
+      description: Create a new Consumer on the specified JetStream
+      parameters:
+      - description: Consumer configuration
+        in: body
+        name: consumer
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateConsumerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Consumer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new Consumer
+      tags:
+      - Consumer
+  /consumers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a Consumer from the system and NATS cluster
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Consumer deleted successfully
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Delete a Consumer
+      tags:
+      - Consumer
+    get:
+      consumes:
+      - application/json
+      description: Retrieve detailed information about a specific Consumer
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Consumer'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get a Consumer
+      tags:
+      - Consumer
+    put:
+      consumes:
+      - application/json
+      description: Update configuration of an existing Consumer
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Consumer update configuration
+        in: body
+        name: consumer
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateConsumerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Consumer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Update a Consumer
+      tags:
+      - Consumer
+  /consumers/{id}/diff:
+    get:
+      consumes:
+      - application/json
+      description: Compare Consumer configuration between database and NATS cluster
+        to detect differences
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ConsumerConfigDiff'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Compare Consumer configuration
+      tags:
+      - Consumer
+  /consumers/{id}/pause:
+    post:
+      consumes:
+      - application/json
+      description: Pause message delivery for a Consumer
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Pause until timestamp (optional)
+        in: body
+        name: pause_until
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Pause a Consumer
+      tags:
+      - Consumer
+  /consumers/{id}/resume:
+    post:
+      consumes:
+      - application/json
+      description: Resume message delivery for a paused Consumer
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Resume a Consumer
+      tags:
+      - Consumer
+  /consumers/{id}/retry:
+    post:
+      consumes:
+      - application/json
+      description: Retry synchronization for a Consumer that failed to sync to NATS
+      parameters:
+      - description: Consumer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Retry Consumer sync
+      tags:
+      - Consumer
+  /consumers/stats:
+    get:
+      consumes:
+      - application/json
+      description: Get aggregated statistics for all Consumers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get Consumer statistics
+      tags:
+      - Consumer
+  /health:
+    get:
+      description: Check the health status of the API and its dependencies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Service is healthy
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service is unhealthy
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - health
+  /jetstreams:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of JetStreams with optional filtering and pagination
+      parameters:
+      - description: Filter by NATS operate user ID
+        in: query
+        name: nats_operate_user_id
+        type: string
+      - description: Filter by status (active, inactive, error)
+        in: query
+        name: status
+        type: string
+      - description: Filter by sync status (pending, synced, failed)
+        in: query
+        name: sync_status
+        type: string
+      - description: Search by name or description
+        in: query
+        name: search
+        type: string
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 20, max: 100)'
+        in: query
+        name: page_size
+        type: integer
+      - description: Sort field (created_at, name)
+        in: query
+        name: sort_by
+        type: string
+      - description: Sort order (asc, desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.PaginatedResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.JetStream'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: List JetStreams
+      tags:
+      - JetStream
+    post:
+      consumes:
+      - application/json
+      description: Create a new JetStream on the specified NATS cluster
+      parameters:
+      - description: JetStream configuration
+        in: body
+        name: jetstream
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateJetStreamRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.JetStream'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new JetStream
+      tags:
+      - JetStream
+  /jetstreams/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a JetStream from the cluster (not from database)
+      parameters:
+      - description: JetStream ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Delete a JetStream
+      tags:
+      - JetStream
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific JetStream by its ID, including real-time statistics
+      parameters:
+      - description: JetStream ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.JetStreamResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get a JetStream
+      tags:
+      - JetStream
+    put:
+      consumes:
+      - application/json
+      description: Update an existing JetStream configuration
+      parameters:
+      - description: JetStream ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated JetStream configuration
+        in: body
+        name: jetstream
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateJetStreamRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.JetStream'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Update a JetStream
+      tags:
+      - JetStream
+  /jetstreams/{id}/diff:
+    get:
+      consumes:
+      - application/json
+      description: Compare database configuration with cluster configuration and return
+        differences
+      parameters:
+      - description: JetStream ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.JetStreamConfigDiff'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Compare JetStream configuration
+      tags:
+      - JetStream
+  /jetstreams/{id}/retry:
+    post:
+      consumes:
+      - application/json
+      description: Retry creating a JetStream on NATS that previously failed but was
+        saved to database
+      parameters:
+      - description: JetStream ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.JetStream'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Retry JetStream creation
+      tags:
+      - JetStream
+  /jetstreams/batch-delete:
+    post:
+      consumes:
+      - application/json
+      description: Delete multiple JetStreams in a single request
+      parameters:
+      - description: Array of JetStream IDs to delete
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Batch delete JetStreams
+      tags:
+      - JetStream
+  /jetstreams/stats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve aggregated statistics for all JetStreams
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get JetStream statistics
+      tags:
+      - JetStream
+  /jetstreams/validate-name:
+    get:
+      consumes:
+      - application/json
+      description: Check if a JetStream name is available for a specific user
+      parameters:
+      - description: NATS Operate User ID
+        in: query
+        name: nats_operate_user_id
+        required: true
+        type: string
+      - description: JetStream name to validate
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Validate JetStream name
+      tags:
+      - JetStream
+  /jwt-tasks:
+    get:
+      description: Get a list of JWT tasks with optional status filter and pagination
+      parameters:
+      - description: Task status filter (pending, processing, completed, failed, retrying)
+        in: query
+        name: status
+        type: string
+      - description: Number of tasks to return (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      - description: Number of tasks to skip (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tasks
+          schema:
+            items:
+              $ref: '#/definitions/models.JWTTask'
+            type: array
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List JWT tasks
+      tags:
+      - jwt-tasks
+  /jwt-tasks/{id}:
+    get:
+      description: Retrieve a JWT task by its ID
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task details
+          schema:
+            $ref: '#/definitions/models.JWTTask'
+        "404":
+          description: Task not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get JWT task by ID
+      tags:
+      - jwt-tasks
+  /jwt-tasks/{id}/retry:
+    post:
+      description: Retry a failed JWT task by resetting it to pending status
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task retry initiated successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Task not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Retry failed JWT task
+      tags:
+      - jwt-tasks
+  /jwt-tasks/failed:
+    get:
+      description: Get a list of failed JWT tasks
+      parameters:
+      - description: Number of tasks to return (default 20, max 100)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of failed tasks
+          schema:
+            items:
+              $ref: '#/definitions/models.JWTTask'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List failed JWT tasks
+      tags:
+      - jwt-tasks
+  /jwt-tasks/stats:
+    get:
+      description: Get statistics of JWT tasks by status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Task statistics
+          schema:
+            $ref: '#/definitions/service.JWTTaskStats'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get JWT task statistics
+      tags:
+      - jwt-tasks
+  /users/{id}:
+    delete:
+      description: Delete a NATS user and remove it from the system
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete user
+      tags:
+      - users
+    get:
+      description: Retrieve a NATS user by its ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User details
+          schema:
+            $ref: '#/definitions/models.User'
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update an existing NATS user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User update request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated user
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update user
+      tags:
+      - users
+  /users/{id}/copy-context:
+    get:
+      description: Generate commands to copy user context environment
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Copy context commands
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get copy context commands for user
+      tags:
+      - users
+  /users/{id}/creds:
+    get:
+      description: Get the creds file content for a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User creds file content
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user creds file content
+      tags:
+      - users
+  /users/{id}/creds/download:
+    get:
+      description: Download the creds file for a user as a file attachment
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: User creds file
+          schema:
+            type: file
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Download user creds file
+      tags:
+      - users
+  /users/{id}/disable:
+    post:
+      description: Disable a NATS user (removes JWT from NATS server)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User disabled successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Disable user
+      tags:
+      - users
+  /users/{id}/enable:
+    post:
+      description: Enable a NATS user (pushes JWT to NATS server)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User enabled successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Enable user
+      tags:
+      - users
+  /users/{id}/jetstreams:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all JetStreams created by a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.JetStream'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get JetStreams by user
+      tags:
+      - JetStream
+  /users/{id}/jwt:
+    get:
+      description: Get the JWT token and decoded claims for a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User JWT and claims
+          schema:
+            $ref: '#/definitions/models.JWTResponse'
+        "404":
+          description: User not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user JWT
+      tags:
+      - users
+  /users/admin/non-system:
+    get:
+      description: Get a list of admin users from all non-system accounts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of admin users
+          schema:
+            items:
+              $ref: '#/definitions/models.SimplifiedUserResponse'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List admin users from non-system accounts
+      tags:
+      - users
+schemes:
+- http
+- https
+swagger: "2.0"
