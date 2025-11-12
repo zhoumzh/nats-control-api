@@ -48,6 +48,7 @@ func (s *UserService) CreateUser(accountID string, req *models.CreateUserRequest
 		PublicKey:   publicKey,
 		NKey:        nkey,
 		Status:      models.UserStatusActive,
+		IsAdmin:     req.IsAdmin,
 		Description: req.Description,
 		Permissions: req.Permissions,
 		Limits:      req.Limits,
@@ -264,7 +265,7 @@ func (s *UserService) generateJWTClaims(req *models.CreateUserRequest) *models.J
 	}
 
 	// 基于角色设置默认权限标签
-	if req.Role == "admin" {
+	if req.Role == "admin" || req.IsAdmin {
 		claims["admin"] = true
 	}
 

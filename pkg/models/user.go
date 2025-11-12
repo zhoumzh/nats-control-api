@@ -110,6 +110,7 @@ type TimeRestrictions struct {
 type CreateUserRequest struct {
 	Name        string           `json:"name" binding:"required"`
 	Description string           `json:"description"`
+	IsAdmin     bool             `json:"is_admin"`
 	Role        string           `json:"role,omitempty"`       // 用户角色
 	Department  string           `json:"department,omitempty"` // 部门
 	Project     string           `json:"project,omitempty"`    // 项目
