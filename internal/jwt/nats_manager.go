@@ -118,21 +118,14 @@ func (nm *NATSManager) CreateAccountJWT(account *models.Account) (string, error)
 			claims.Limits.Subs = account.Limits.MaxSubscriptions
 		}
 
-		// JetStream limits - 只有在明确启用时才设置
-		if account.Limits.JetStreamLimits != nil {
-			// 检查是否有任何非零的JetStream限制，如果都是0则表示禁用JetStream
-			hasJetStreamLimits := account.Limits.JetStreamLimits.DiskStorageValue > 0 ||
-				account.Limits.JetStreamLimits.MemoryStorageValue > 0 ||
-				account.Limits.JetStreamLimits.Streams > 0 ||
-				account.Limits.JetStreamLimits.Consumers > 0
-
-			if hasJetStreamLimits {
-				claims.Limits.JetStreamLimits.DiskStorage = models.ConvertToBytes(account.Limits.JetStreamLimits.DiskStorageValue, account.Limits.JetStreamLimits.DiskStorageUnit)
-				claims.Limits.JetStreamLimits.MemoryStorage = models.ConvertToBytes(account.Limits.JetStreamLimits.MemoryStorageValue, account.Limits.JetStreamLimits.MemoryStorageUnit)
-				claims.Limits.JetStreamLimits.Streams = account.Limits.JetStreamLimits.Streams
-				claims.Limits.JetStreamLimits.Consumer = account.Limits.JetStreamLimits.Consumers
-			}
-			// 如果所有JetStream限制都是0，则不设置任何JetStream limits，这样JWT中就不会包含JetStream配置
+		// JetStream limits - 根据enabled字段判断是否启用
+		if account.Limits.JetStreamLimits != nil && account.Limits.JetStreamLimits.Enabled {
+			// 只要enabled为true，就设置JetStream配置
+			// 注意：值为0表示不限制（unlimited），而不是禁用
+			claims.Limits.JetStreamLimits.DiskStorage = models.ConvertToBytes(account.Limits.JetStreamLimits.DiskStorageValue, account.Limits.JetStreamLimits.DiskStorageUnit)
+			claims.Limits.JetStreamLimits.MemoryStorage = models.ConvertToBytes(account.Limits.JetStreamLimits.MemoryStorageValue, account.Limits.JetStreamLimits.MemoryStorageUnit)
+			claims.Limits.JetStreamLimits.Streams = account.Limits.JetStreamLimits.Streams
+			claims.Limits.JetStreamLimits.Consumer = account.Limits.JetStreamLimits.Consumers
 		}
 
 		// Handle imports
